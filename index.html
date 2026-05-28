@@ -48,6 +48,45 @@
       </section>
 
       <section class="card">
+        <h2>Notificação personalizada</h2>
+        <form id="custom-form" class="form">
+          <label class="field">
+            <span class="field-label">Tipo</span>
+            <select id="custom-type" name="type" required>
+              <option value="chat">Chat</option>
+              <option value="calendar">Calendário</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">Atraso (segundos)</span>
+            <input id="custom-delay" name="delaySec" type="number" min="0" step="1" value="3" required />
+          </label>
+          <label class="field">
+            <span class="field-label">Título</span>
+            <input id="custom-title" name="title" type="text" required />
+          </label>
+          <label class="field">
+            <span class="field-label">Corpo</span>
+            <textarea id="custom-body" name="body" rows="3" required placeholder="Texto da notificação"></textarea>
+          </label>
+          <label class="field">
+            <span class="field-label">Tag</span>
+            <input id="custom-tag" name="tag" type="text" placeholder="ex.: custom-1" />
+          </label>
+          <div class="row">
+            <button type="submit" class="btn">Agendar</button>
+            <button type="button" id="btn-custom-now" class="btn btn-secondary">Enviar agora</button>
+          </div>
+          <div class="row" style="margin-top: 8px">
+            <button type="button" id="btn-queue-add" class="btn btn-secondary">Adicionar à fila</button>
+            <button type="button" id="btn-queue-run" class="btn">Rodar fila</button>
+          </div>
+          <button type="button" id="btn-queue-clear" class="btn btn-ghost" style="margin-top: 8px">Limpar fila</button>
+          <ol id="custom-queue" class="queue-list" hidden></ol>
+        </form>
+      </section>
+
+      <section class="card">
         <h2>Aviso avulso</h2>
         <div id="quick-list"></div>
       </section>

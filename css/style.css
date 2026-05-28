@@ -128,7 +128,9 @@ h1 {
   flex: 1 1 100%;
 }
 
-select {
+select,
+.field input,
+.field textarea {
   width: 100%;
   padding: 12px;
   border-radius: 10px;
@@ -136,7 +138,49 @@ select {
   background: #111;
   color: var(--text);
   font-size: 0.95rem;
+}
+
+select {
   margin-bottom: 10px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 72px;
+  font-family: inherit;
+  line-height: 1.4;
+}
+
+.queue-list {
+  margin: 12px 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.queue-list li {
+  margin-bottom: 4px;
 }
 
 .steps {
