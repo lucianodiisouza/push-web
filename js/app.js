@@ -1,8 +1,11 @@
-import { SCENARIOS, QUICK_PINGS, NOTIFICATION_TYPES } from "./scenarios.js";
+import { SCENARIOS, QUICK_PINGS, NOTIFICATION_TYPES, APP_PRESETS } from "./scenarios.js";
+
+const APP_PRESET_KEY = "push-web-app-preset";
 
 const $ = (sel) => document.querySelector(sel);
 const statusEl = $("#status");
 const scenarioSelect = $("#scenario");
+const appPresetSelect = $("#app-preset");
 const timers = [];
 const customQueue = [];
 
@@ -46,23 +49,37 @@ async function ensurePermission() {
   }
 }
 
+function getAppPresetKey() {
+  const key = appPresetSelect?.value ?? "default";
+  return APP_PRESETS[key] ? key : "default";
+}
+
+function getAppPreset() {
+  return APP_PRESETS[getAppPresetKey()];
+}
+
+function notificationOptions({ body, tag }) {
+  const preset = getAppPreset();
+  return {
+    body,
+    tag: tag || `n-${Date.now()}`,
+    icon: preset.icon,
+    badge: preset.icon,
+    silent: false,
+  };
+}
+
 function showViaWorker(reg, { title, body, tag }) {
+  const options = notificationOptions({ body, tag });
   const worker = reg.active || reg.waiting || reg.installing;
+
   if (!worker) {
-    return reg.showNotification(title, { body, tag, icon: "/icons/icon-192.png" });
+    return reg.showNotification(title, options);
   }
+
   worker.postMessage({
     type: "SHOW_NOTIFICATION",
-    payload: {
-      title,
-      options: {
-        body,
-        tag: tag || `n-${Date.now()}`,
-        icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
-        silent: false,
-      },
-    },
+    payload: { title, options },
   });
 }
 
@@ -72,7 +89,28 @@ async function fireOne({ title, body, tag }) {
 }
 
 function titleForType(typeKey) {
+  const preset = getAppPreset();
+  if (preset.title) return preset.title;
   return NOTIFICATION_TYPES[typeKey]?.title ?? NOTIFICATION_TYPES.chat.title;
+}
+
+function setupAppPreset() {
+  for (const [key, preset] of Object.entries(APP_PRESETS)) {
+    const opt = document.createElement("option");
+    opt.value = key;
+    opt.textContent = preset.label;
+    appPresetSelect.appendChild(opt);
+  }
+
+  const saved = localStorage.getItem(APP_PRESET_KEY);
+  if (saved && APP_PRESETS[saved]) {
+    appPresetSelect.value = saved;
+  }
+
+  appPresetSelect.addEventListener("change", () => {
+    localStorage.setItem(APP_PRESET_KEY, appPresetSelect.value);
+    applyTypeToTitle(true);
+  });
 }
 
 function readCustomForm() {
@@ -90,7 +128,10 @@ function readCustomForm() {
 function applyTypeToTitle(force = false) {
   const next = titleForType(customType.value);
   const current = customTitle.value.trim();
-  const knownTitles = Object.values(NOTIFICATION_TYPES).map((t) => t.title);
+  const knownTitles = [
+    ...Object.values(NOTIFICATION_TYPES).map((t) => t.title),
+    ...Object.values(APP_PRESETS).map((p) => p.title).filter(Boolean),
+  ];
   if (force || !current || knownTitles.includes(current)) {
     customTitle.value = next;
   }
@@ -280,6 +321,7 @@ function populateUI() {
 }
 
 async function init() {
+  setupAppPreset();
   populateUI();
   setupCustomForm();
 
