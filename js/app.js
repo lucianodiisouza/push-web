@@ -173,11 +173,11 @@ async function scheduleCustom(item, { immediate = false } = {}) {
     setStatus(`Agendado em ${item.delaySec}s: ${item.body.slice(0, 40)}…`, "active");
     timers.push(
       setTimeout(() => {
-        setStatus("Notificação enviada. Bloqueie a tela para gravar.", "done");
+        setStatus("Notificação enviada.", "done");
       }, delayMs + 500)
     );
   } else {
-    setStatus("Notificação enviada. Bloqueie a tela para gravar.", "done");
+    setStatus("Notificação enviada.", "done");
   }
 }
 
@@ -205,7 +205,7 @@ async function runCustomQueue() {
   const last = customQueue[customQueue.length - 1];
   timers.push(
     setTimeout(() => {
-      setStatus("Fila finalizada. Bloqueie a tela ou troque de app para gravar.", "done");
+      setStatus("Fila finalizada.", "done");
     }, (last.delaySec + 2) * 1000)
   );
 }
@@ -287,7 +287,7 @@ async function runScenario(key) {
   const endMs = (last.delaySec + 2) * 1000;
   timers.push(
     setTimeout(() => {
-      setStatus("Sequência finalizada. Bloqueie a tela ou troque de app para gravar a bandeja.", "done");
+      setStatus("Sequência finalizada.", "done");
     }, endMs)
   );
 }
@@ -326,7 +326,7 @@ async function init() {
   setupCustomForm();
 
   if (!window.isSecureContext) {
-    setStatus("Abra via HTTPS (Vercel) — notificações exigem contexto seguro.", "error");
+    setStatus("Notificações exigem HTTPS.", "error");
     return;
   }
 
