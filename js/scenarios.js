@@ -1,5 +1,44 @@
 /** Cenários de notificações para gravação (pt-BR) */
 
+/** Presets de app simulado — ícones genéricos (cores), não logos oficiais */
+export const APP_PRESETS = {
+  default: {
+    label: "Este app (AlertWorker - PrimoDev)",
+    title: null,
+    icon: "/icons/icon-192.png",
+  },
+  whatsapp: {
+    label: "WhatsApp (simulado)",
+    title: "WhatsApp",
+    icon: "/icons/apps/whatsapp.png",
+  },
+  telegram: {
+    label: "Telegram (simulado)",
+    title: "Telegram",
+    icon: "/icons/apps/telegram.png",
+  },
+  slack: {
+    label: "Slack (simulado)",
+    title: "Slack",
+    icon: "/icons/apps/slack.png",
+  },
+  messages: {
+    label: "Mensagens (simulado)",
+    title: "Mensagens",
+    icon: "/icons/apps/messages.png",
+  },
+  gmail: {
+    label: "Gmail (simulado)",
+    title: "Gmail",
+    icon: "/icons/apps/gmail.png",
+  },
+  calendar: {
+    label: "Calendário (simulado)",
+    title: "Calendário",
+    icon: "/icons/apps/calendar.png",
+  },
+};
+
 export const NOTIFICATION_TYPES = {
   chat: { label: "Chat", title: "Chat corporativo" },
   calendar: { label: "Calendário", title: "Calendário" },
