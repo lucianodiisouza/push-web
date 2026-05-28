@@ -1,9 +1,18 @@
-import { SCENARIOS, QUICK_PINGS } from "./scenarios.js";
+import { SCENARIOS, QUICK_PINGS, NOTIFICATION_TYPES } from "./scenarios.js";
 
 const $ = (sel) => document.querySelector(sel);
 const statusEl = $("#status");
 const scenarioSelect = $("#scenario");
 const timers = [];
+const customQueue = [];
+
+const customForm = $("#custom-form");
+const customType = $("#custom-type");
+const customDelay = $("#custom-delay");
+const customTitle = $("#custom-title");
+const customBody = $("#custom-body");
+const customTag = $("#custom-tag");
+const customQueueEl = $("#custom-queue");
 
 function setStatus(text, kind = "info") {
   statusEl.textContent = text;
@@ -60,6 +69,156 @@ function showViaWorker(reg, { title, body, tag }) {
 async function fireOne({ title, body, tag }) {
   const reg = await getRegistration();
   await showViaWorker(reg, { title, body, tag });
+}
+
+function titleForType(typeKey) {
+  return NOTIFICATION_TYPES[typeKey]?.title ?? NOTIFICATION_TYPES.chat.title;
+}
+
+function readCustomForm() {
+  const type = customType.value;
+  const delaySec = Math.max(0, Number(customDelay.value) || 0);
+  const title = customTitle.value.trim() || titleForType(type);
+  const body = customBody.value.trim();
+  const tag = customTag.value.trim() || `custom-${Date.now()}`;
+
+  if (!body) throw new Error("Preencha o corpo da notificação.");
+
+  return { type, delaySec, title, body, tag };
+}
+
+function applyTypeToTitle(force = false) {
+  const next = titleForType(customType.value);
+  const current = customTitle.value.trim();
+  const knownTitles = Object.values(NOTIFICATION_TYPES).map((t) => t.title);
+  if (force || !current || knownTitles.includes(current)) {
+    customTitle.value = next;
+  }
+}
+
+function renderCustomQueue() {
+  if (customQueue.length === 0) {
+    customQueueEl.hidden = true;
+    customQueueEl.replaceChildren();
+    return;
+  }
+
+  customQueueEl.hidden = false;
+  customQueueEl.replaceChildren();
+  customQueue.forEach((item, i) => {
+    const li = document.createElement("li");
+    const typeLabel = NOTIFICATION_TYPES[item.type]?.label ?? item.type;
+    li.textContent = `${i + 1}. +${item.delaySec}s · ${typeLabel} · ${item.body.slice(0, 36)}${item.body.length > 36 ? "…" : ""}`;
+    customQueueEl.appendChild(li);
+  });
+}
+
+async function scheduleCustom(item, { immediate = false } = {}) {
+  clearTimers();
+  await ensurePermission();
+  const reg = await getRegistration();
+  const delayMs = immediate ? 0 : item.delaySec * 1000;
+
+  const id = setTimeout(() => {
+    showViaWorker(reg, {
+      title: item.title,
+      body: item.body,
+      tag: item.tag,
+    });
+  }, delayMs);
+  timers.push(id);
+
+  if (!immediate && item.delaySec > 0) {
+    setStatus(`Agendado em ${item.delaySec}s: ${item.body.slice(0, 40)}…`, "active");
+    timers.push(
+      setTimeout(() => {
+        setStatus("Notificação enviada. Bloqueie a tela para gravar.", "done");
+      }, delayMs + 500)
+    );
+  } else {
+    setStatus("Notificação enviada. Bloqueie a tela para gravar.", "done");
+  }
+}
+
+async function runCustomQueue() {
+  if (customQueue.length === 0) {
+    throw new Error("A fila está vazia. Adicione itens com o formulário.");
+  }
+
+  clearTimers();
+  await ensurePermission();
+  const reg = await getRegistration();
+  setStatus(`Rodando fila (${customQueue.length} avisos)`, "active");
+
+  for (const item of customQueue) {
+    const id = setTimeout(() => {
+      showViaWorker(reg, {
+        title: item.title,
+        body: item.body,
+        tag: item.tag,
+      });
+    }, item.delaySec * 1000);
+    timers.push(id);
+  }
+
+  const last = customQueue[customQueue.length - 1];
+  timers.push(
+    setTimeout(() => {
+      setStatus("Fila finalizada. Bloqueie a tela ou troque de app para gravar.", "done");
+    }, (last.delaySec + 2) * 1000)
+  );
+}
+
+function setupCustomForm() {
+  applyTypeToTitle(true);
+
+  customType.addEventListener("change", () => applyTypeToTitle(true));
+
+  customForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    try {
+      const item = readCustomForm();
+      await scheduleCustom(item);
+    } catch (err) {
+      setStatus(err.message, "error");
+    }
+  });
+
+  $("#btn-custom-now").addEventListener("click", async () => {
+    try {
+      const item = readCustomForm();
+      await scheduleCustom(item, { immediate: true });
+    } catch (err) {
+      setStatus(err.message, "error");
+    }
+  });
+
+  $("#btn-queue-add").addEventListener("click", () => {
+    try {
+      const item = readCustomForm();
+      customQueue.push(item);
+      renderCustomQueue();
+      setStatus(`Adicionado à fila (${customQueue.length} itens).`, "done");
+      customBody.value = "";
+      customTag.value = "";
+    } catch (err) {
+      setStatus(err.message, "error");
+    }
+  });
+
+  $("#btn-queue-run").addEventListener("click", async () => {
+    try {
+      await runCustomQueue();
+    } catch (err) {
+      setStatus(err.message, "error");
+    }
+  });
+
+  $("#btn-queue-clear").addEventListener("click", () => {
+    customQueue.length = 0;
+    renderCustomQueue();
+    setStatus("Fila limpa.", "info");
+  });
 }
 
 async function runScenario(key) {
@@ -122,6 +281,7 @@ function populateUI() {
 
 async function init() {
   populateUI();
+  setupCustomForm();
 
   if (!window.isSecureContext) {
     setStatus("Abra via HTTPS (Vercel) — notificações exigem contexto seguro.", "error");

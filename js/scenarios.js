@@ -1,5 +1,10 @@
 /** Cenários de notificações para gravação (pt-BR) */
 
+export const NOTIFICATION_TYPES = {
+  chat: { label: "Chat", title: "Chat corporativo" },
+  calendar: { label: "Calendário", title: "Calendário" },
+};
+
 export const SCENARIOS = {
   manhaCorrida: {
     label: "Manhã corrida (8 avisos, ~90s)",
