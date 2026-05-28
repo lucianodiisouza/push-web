@@ -1,4 +1,4 @@
-# Alertas Trabalho (PWA demo)
+# AlertWorker - PrimoDev (PWA demo)
 
 PWA estática que dispara **notificações genéricas de trabalho** (chat + calendário) para gravação no iPhone. Sem backend.
 

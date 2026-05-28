@@ -38,7 +38,7 @@ async function ensurePermission() {
   }
   if (Notification.permission === "granted") return;
   if (Notification.permission === "denied") {
-    throw new Error("Notificações bloqueadas. Ative em Ajustes → Notificações → Alertas Trabalho.");
+    throw new Error("Notificações bloqueadas. Ative em Ajustes → Notificações → AlertWorker - PrimoDev.");
   }
   const result = await Notification.requestPermission();
   if (result !== "granted") {

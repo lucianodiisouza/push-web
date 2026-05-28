@@ -1,6 +1,6 @@
 {
-  "name": "Alertas Trabalho (Demo)",
-  "short_name": "Alertas Trabalho",
+  "name": "AlertWorker - PrimoDev (Demo)",
+  "short_name": "AlertWorker - PrimoDev",
   "description": "Notificações de trabalho para demonstração em vídeo — sem vínculo com produtos reais.",
   "start_url": "/",
   "display": "standalone",
